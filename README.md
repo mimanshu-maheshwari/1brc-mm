@@ -3,4 +3,4 @@
 ## Links: 
 - [Gunnar Morling Git](https://github.com/gunnarmorling/1brc)
 - [1brc.dev](https://1brc.dev/)
-
+- [tumdum rust solution](https://github.com/tumdum/1brc/blob/main/src/main.rs)
