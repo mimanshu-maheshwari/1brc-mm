@@ -38,16 +38,21 @@ impl Default for Stats {
 }
 
 impl Stats {
+
+    #[inline(always)]
     fn new() -> Self {
         Self::default()
     }
 
+    #[inline]
     fn update(&mut self, temperature: i16) {
         self.min = self.min.min(temperature);
         self.max = self.max.max(temperature);
         self.sum += temperature as i64;
         self.count += 1;
     }
+
+    #[inline]
     fn accumulate(&mut self, other: &Stats) {
         self.min = self.min.min(other.min);
         self.max = self.max.max(other.max);
@@ -55,11 +60,13 @@ impl Stats {
         self.sum += other.sum;
     }
 
+    #[inline(always)]
     fn average(&self) -> f32 {
         (self.sum / self.count as i64) as f32 / 10.0_f32
     }
 }
 
+#[inline]
 fn next_new_line(file: &mut BufReader<File>, pos: usize) -> io::Result<usize> {
     let mut buf = [0; 1];
     file.seek(SeekFrom::Start(pos as u64))?;
@@ -72,6 +79,7 @@ fn next_new_line(file: &mut BufReader<File>, pos: usize) -> io::Result<usize> {
     Ok(pos)
 }
 
+#[inline]
 fn parse_segment(
     file: &mut BufReader<File>,
     start_pos: usize,
@@ -95,6 +103,7 @@ fn parse_segment(
     Ok(())
 }
 
+#[inline]
 fn accumulate_results(all_results: Vec<BTreeMap<String, Stats>>) -> BTreeMap<String, Stats> {
     let mut final_results = BTreeMap::new();
     for result_map in all_results {
