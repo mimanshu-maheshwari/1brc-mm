@@ -1,4 +1,8 @@
 # 1🐝🏎 (One Billion Row Challenge)
+## Optimizaton links: 
+### Compilation: 
+- https://deterministic.space/high-performance-rust.html
+- https://nnethercote.github.io/perf-book/build-configuration.html
 
 ## Links: 
 - [Gunnar Morling Git](https://github.com/gunnarmorling/1brc)

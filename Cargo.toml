@@ -2,5 +2,12 @@
 name = "obrc-mm"
 version = "0.1.0"
 edition = "2021"
+authors = ["maheshwarimimanshu@gmail.com" ]
+
+[profile.release]
+codegen-units = 1
+lto = "fat"
+opt-level = "z"
+strip = "debuginfo"
 
 [dependencies]

@@ -43,7 +43,7 @@ fn main() {
     let mut stats_map: HashMap<String, Stats> = HashMap::new();
 
     // Process each line in the file
-    for line in buf_reader.lines().filter_map(Result::ok) {
+    for line in buf_reader.lines().map_while(Result::ok) {
         if let Some((location, temp_str)) = line.split_once(";") {
             if let Ok(temperature) = temp_str.trim().parse::<f32>() {
                 stats_map.entry(location.to_owned()).or_default().update(temperature);
