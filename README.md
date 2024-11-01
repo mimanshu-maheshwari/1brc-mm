@@ -1,4 +1,23 @@
 # 1🐝🏎 (One Billion Row Challenge)
+## System Configuration: 
+```powershell
+ Get-WmiObject -Class Win32_Processor | Select-Object Name, NumberOfCores, NumberOfLogicalProcessors
+
+Name                                     NumberOfCores NumberOfLogicalProcessors
+----                                     ------------- -------------------------
+Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz             6                        12
+
+
+ Get-WmiObject -Class Win32_ComputerSystem | Select-Object TotalPhysicalMemory                                                                                                                                                                                                                                         TotalPhysicalMemory
+-------------------
+        12717314048
+
+
+ systeminfo | findstr /C:"Total Physical Memory"
+Total Physical Memory:     12,128 MB
+ echo $env:NUMBER_OF_PROCESSORS
+12
+```
 ## Optimization links: 
 ### Compilation: 
 - https://deterministic.space/high-performance-rust.html
