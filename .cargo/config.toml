@@ -1,0 +1,12 @@
+[alias]
+	b="build"
+	c="check"
+	d="doc"
+	t="test"
+	r="run"
+	rr = "run --release"
+	rm="remove"
+	br="build --release"
+
+[target.x86_64-pc-windows-gnu]
+rustflags = ["-C", "link-arg=-fuse-ld=lld"]
