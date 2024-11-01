@@ -1,14 +1,11 @@
 use std::{
-    collections::BTreeMap,
-    fs::File,
-    io::{self, BufRead, BufReader, Read, Seek, SeekFrom},
-    path::Path,
-    sync::{
+    collections::BTreeMap, fmt::Display, fs::File, io, path::Path, sync::{
         atomic::{AtomicUsize, Ordering},
         Arc, Mutex,
-    },
-    thread,
+    }, thread
 };
+
+use memmap2::{Mmap, MmapOptions};
 
 const MIN_TEMP: i16 = -999;
 const MAX_TEMP: i16 = 999;
@@ -37,8 +34,13 @@ impl Default for Stats {
     }
 }
 
-impl Stats {
+impl Display for Stats {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}/{}/{}", (self.min as f32)/10.0_f32, self.average(), (self.max as f32)/10.0f32 )
+    }
+}
 
+impl Stats {
     #[inline(always)]
     fn new() -> Self {
         Self::default()
@@ -67,40 +69,41 @@ impl Stats {
 }
 
 #[inline]
-fn next_new_line(file: &mut BufReader<File>, pos: usize) -> io::Result<usize> {
-    let mut buf = [0; 1];
-    file.seek(SeekFrom::Start(pos as u64))?;
+fn next_new_line(mmap: &Mmap, pos: usize) -> usize {
     let mut pos = pos;
-    while file.read(&mut buf)? > 0 {
-        if buf[0] == b'\n' {
-            pos += 1;
-        }
+    while pos < mmap.len() && mmap[pos] != b'\n' {
+        pos += 1;
     }
-    Ok(pos)
+    pos + 1 // Move to the start of the next line
 }
 
 #[inline]
 fn parse_segment(
-    file: &mut BufReader<File>,
+    mmap: &Mmap,
     start_pos: usize,
     end_pos: usize,
     results: &mut BTreeMap<String, Stats>,
-) -> io::Result<()> {
-    // let mut file = BufReader::new(File::open(file_path)?);
-    file.seek(SeekFrom::Start(start_pos as u64))?;
-    let mut buffer = String::new();
-    while file.read_line(&mut buffer)? > 0 && (file.stream_position()? as usize) < end_pos {
-        let parts = buffer.trim().split_once(";");
-        if let Some((city_name, temp)) = parts {
-            let city_name = city_name.to_string();
-            if let Ok(temp) = temp.parse::<f32>() {
-                let entry = results.entry(city_name).or_default(); // or_insert_with(Stats::new);
-                entry.update((temp * 10.0) as i16);
+) {
+    let mut pos = start_pos;
+    while pos < end_pos {
+        let end_of_line = mmap[pos..]
+            .iter()
+            .position(|&b| b == b'\n')
+            .map(|p| pos + p + 1)
+            .unwrap_or(end_pos);
+
+        let line = &mmap[pos..end_of_line];
+        if let Ok(buffer) = std::str::from_utf8(line) {
+            if let Some((city_name, temp)) = buffer.trim().split_once(";") {
+                let city_name = city_name.to_string();
+                if let Ok(temp) = temp.parse::<f32>() {
+                    let entry = results.entry(city_name).or_default();
+                    entry.update((temp * 10.0) as i16);
+                }
             }
         }
-        buffer.clear();
+        pos = end_of_line;
     }
-    Ok(())
 }
 
 #[inline]
@@ -116,37 +119,45 @@ fn accumulate_results(all_results: Vec<BTreeMap<String, Stats>>) -> BTreeMap<Str
     }
     final_results
 }
+
 fn main() -> io::Result<()> {
     let file_path = Path::new(FILE_PATH);
-    let display = file_path.display();
-    let file_size = File::open(&file_path)
-        .expect(format!("Unable to find path {}", display).as_str())
-        .metadata()?
-        .len() as usize;
+    let file = File::options()
+        .read(true)
+        .create(false)
+        .write(false)
+        .open(file_path)?;
+    let file_size = file.metadata()?.len() as usize;
+
     let num_threads = std::thread::available_parallelism()
         .map(|n| n.get())
         .unwrap_or(1);
 
+    let mmap = Arc::new(unsafe { MmapOptions::new().len(file_size).map(&file)? });
     let segment_size = SEGMENT_SIZE.min(file_size / num_threads);
     let cursor = Arc::new(AtomicUsize::new(0));
-    let mut handles = vec![];
     let result_sets = Arc::new(Mutex::new(Vec::with_capacity(num_threads)));
+    let mut handles = vec![];
+
     for _ in 0..num_threads {
         let cursor = Arc::clone(&cursor);
         let result_sets = Arc::clone(&result_sets);
+        let mmap_ = Arc::clone(&mmap);
+
         let handle = thread::spawn(move || {
             let mut local_results = BTreeMap::new();
             let start_pos = cursor.fetch_add(segment_size, Ordering::SeqCst);
-            if start_pos >= file_size {
+            if start_pos >= mmap_.len() {
                 return;
             }
-            let end_pos = (start_pos + segment_size).min(file_size);
-            let mut file = BufReader::new(File::open(&file_path).unwrap());
-            let start_line = next_new_line(&mut file, start_pos).unwrap();
-            let end_line = next_new_line(&mut file, end_pos).unwrap();
-            if parse_segment(&mut file, start_line, end_line, &mut local_results).is_ok() {
-                result_sets.lock().unwrap().push(local_results);
-            }
+
+            let end_pos = (start_pos + segment_size).min(mmap_.len());
+            let start_line = next_new_line(&mmap_, start_pos);
+            let end_line = next_new_line(&mmap_, end_pos);
+
+            parse_segment(&mmap_, start_line, end_line, &mut local_results);
+
+            result_sets.lock().unwrap().push(local_results);
         });
         handles.push(handle);
     }
@@ -158,14 +169,8 @@ fn main() -> io::Result<()> {
     let all_results = Arc::try_unwrap(result_sets).unwrap().into_inner().unwrap();
     let final_results = accumulate_results(all_results);
 
-    for (city_name, result) in final_results {
-        println!(
-            "{}: min = {}, avg = {:.1}, max = {}",
-            city_name,
-            result.min,
-            result.average(),
-            result.max
-        );
+    for (city_name, stats) in final_results {
+        println!("{};{}", city_name, stats);
     }
 
     Ok(())

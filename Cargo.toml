@@ -11,3 +11,4 @@ opt-level = "z"
 strip = "debuginfo"
 
 [dependencies]
+memmap2 = "0.9.5"
