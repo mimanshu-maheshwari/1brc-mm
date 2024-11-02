@@ -10,7 +10,7 @@ use memmap2::{Mmap, MmapOptions};
 const MIN_TEMP: i16 = -999;
 const MAX_TEMP: i16 = 999;
 const FILE_PATH: &str = "./res/measurements.txt";
-const SEGMENT_SIZE: usize = 1 << 21;
+// const SEGMENT_SIZE: usize = 1 << 21;
 // const HASH_TABLE_SIZE: usize = 1 << 17;
 // const MAX_NAME_LENGTH: usize = 100;
 // const MAX_CITIES: usize = 10000;
@@ -128,13 +128,16 @@ fn main() -> io::Result<()> {
         .write(false)
         .open(file_path)?;
     let file_size = file.metadata()?.len() as usize;
+    // println!("file size: {file_size}");
 
     let num_threads = std::thread::available_parallelism()
         .map(|n| n.get())
         .unwrap_or(1);
 
+    // println!("num of threads: {num_threads}");
     let mmap = Arc::new(unsafe { MmapOptions::new().len(file_size).map(&file)? });
-    let segment_size = SEGMENT_SIZE.min(file_size / num_threads);
+    let segment_size = file_size / num_threads;
+    // let segment_size = SEGMENT_SIZE.min(file_size / num_threads);
     let cursor = Arc::new(AtomicUsize::new(0));
     let result_sets = Arc::new(Mutex::new(Vec::with_capacity(num_threads)));
     let mut handles = vec![];
