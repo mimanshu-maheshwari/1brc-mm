@@ -36,7 +36,7 @@ impl Default for Stats {
 
 impl Display for Stats {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}/{}/{}", (self.min as f32)/10.0_f32, self.average(), (self.max as f32)/10.0f32 )
+        write!(f, "{:.1}/{:.1}/{:.1}", (self.min as f32)/10.0_f32, self.average(), (self.max as f32)/10.0f32 )
     }
 }
 
@@ -152,7 +152,12 @@ fn main() -> io::Result<()> {
             }
 
             let end_pos = (start_pos + segment_size).min(mmap_.len());
-            let start_line = next_new_line(&mmap_, start_pos);
+            let start_line = if start_pos == 0 {
+                0 // Start directly from beginning for the first chunk
+            } else {
+                next_new_line(&mmap_, start_pos)
+            };
+            // let start_line = next_new_line(&mmap_, start_pos);
             let end_line = next_new_line(&mmap_, end_pos);
 
             parse_segment(&mmap_, start_line, end_line, &mut local_results);
