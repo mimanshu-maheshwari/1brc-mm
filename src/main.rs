@@ -1,3 +1,6 @@
+use obrc_mm::hash_naive;
+
 fn main() {
-    println!("Hello World!");
+    const FILE_NAME: &str = "res/measurements.txt";
+    hash_naive::solve(FILE_NAME);
 }

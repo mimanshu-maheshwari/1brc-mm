@@ -2,3 +2,5 @@
 res/measurements.txt
 res/CreateMeasurements.class
 output-mm
+flamegraph.svg
+perf.data

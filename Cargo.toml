@@ -2,12 +2,22 @@
 name = "obrc-mm"
 version = "0.1.0"
 edition = "2021"
-authors = ["maheshwarimimanshu@gmail.com" ]
+authors = ["Mimanshu Maheshwari <maheshwarimimanshu@gmail.com>" ]
 
 [profile.release]
 codegen-units = 1
 lto = "fat"
 opt-level = "z"
 strip = "debuginfo"
+
+[lib]
+path = "src/lib.rs"
+
+[[bench]]
+name = "naive"
+harness = false
+
+[dev-dependencies]
+criterion = "0.3"
 
 [dependencies]
