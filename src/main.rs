@@ -1,8 +1,14 @@
 use std::{
-    collections::BTreeMap, fmt::Display, fs::File, io, path::Path, sync::{
+    collections::BTreeMap,
+    fmt::Display,
+    fs::File,
+    io,
+    path::Path,
+    sync::{
         atomic::{AtomicUsize, Ordering},
         Arc, Mutex,
-    }, thread
+    },
+    thread,
 };
 
 use memmap2::{Mmap, MmapOptions};
@@ -36,7 +42,13 @@ impl Default for Stats {
 
 impl Display for Stats {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:.1}/{:.1}/{:.1}", (self.min as f32)/10.0_f32, self.average(), (self.max as f32)/10.0f32 )
+        write!(
+            f,
+            "{:.1}/{:.1}/{:.1}",
+            (self.min as f32) / 10.0_f32,
+            self.average(),
+            (self.max as f32) / 10.0f32
+        )
     }
 }
 
