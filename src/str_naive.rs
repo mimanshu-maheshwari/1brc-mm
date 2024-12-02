@@ -16,16 +16,13 @@ pub fn solve(file_name: &str) {
     let mut reader = BufReader::new(file);
     let mut buf = Vec::with_capacity(200);
     let mut records = HashMap::<Measurement>::with_capacity(1_000_000);
-    // let mut count = 0;
     while let Ok(n) = reader.read_until(b'\n', &mut buf) {
         if n == 0 {
             break;
         }
         let line = &buf[..n - 1];
-        // count += 1;
         if let Some((city, value)) = split_at(line) {
             let value = parse_temp(value);
-            // println!("{}: {}", String::from_utf8(city.to_owned()).unwrap(), value);
             if let Some(val) = records.get_mut_(city) {
                 val.update(value);
             } else {
@@ -36,9 +33,6 @@ pub fn solve(file_name: &str) {
             }
         }
         buf.clear();
-        // if count % 1_000_000 == 0 {
-        //     println!("{} lines processed", count);
-        // }
     }
     display(records);
 }
@@ -58,13 +52,12 @@ fn parse_temp(bytes: &[u8]) -> f32 {
     let mut neg = false;
     let mut value = 0.0;
     let mut multiplier = 1.0;
-    // println!("{:?}", bytes);
     for &byte in bytes {
         match byte {
             b'-' => neg = true,
             b'.' => multiplier = 0.1,
             s if (b'0'..=b'9').contains(&s) => {
-                value = (value * if multiplier == 1.0 { 1.0 } else { 10.0 })
+                value = (value * if multiplier == 0.1 { 1.0 } else { 10.0 })
                     + ((s - b'0') as f32 * multiplier)
             }
             s => panic!("Unexpected value ({s}) while parsing temp"),
