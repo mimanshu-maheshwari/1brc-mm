@@ -12,7 +12,7 @@ impl<V: Clone> HashMap<V> {
     }
 
     fn hash_(&self, key: &[u8]) -> usize {
-        ((key.iter().map(|&v| v as usize).sum::<usize>() + 7) * 5) % self.capacity
+        (((key.iter().map(|&v| v as usize).sum::<usize>() + 7) * 5) + 31) % self.capacity
     }
 
     fn hash(&self, key: &str) -> usize {
