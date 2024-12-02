@@ -1,47 +1,10 @@
+use super::measurement::Measurement;
+
 use std::{
     collections::HashMap,
-    fmt::Display,
     fs::File,
     io::{BufRead, BufReader},
 };
-
-#[derive(Debug)]
-pub struct Measurement {
-    pub min: f32,
-    pub max: f32,
-    pub sum: f32,
-    pub count: usize,
-}
-impl Measurement {
-    #[inline(always)]
-    fn new(temp: f32) -> Self {
-        Self {
-            min: temp,
-            max: temp,
-            sum: temp,
-            count: 1,
-        }
-    }
-    #[inline(always)]
-    fn add(&mut self, temp: f32) {
-        self.min = temp.min(self.min);
-        self.max = temp.max(self.max);
-        self.sum += temp;
-        self.count += 1;
-    }
-}
-
-impl Display for Measurement {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "{:.1}/{:.1}/{:.1}",
-            self.min,
-            (self.sum / self.count as f32),
-            self.max
-        )
-    }
-}
 
 #[inline(always)]
 pub fn solve(file_name: &str) {
@@ -64,7 +27,7 @@ pub fn solve(file_name: &str) {
         })
         .fold(HashMap::<String, Measurement>::new(), |mut acc, e| {
             acc.entry(e.0.to_string())
-                .and_modify(|v| v.add(e.1))
+                .and_modify(|v| v.update(e.1))
                 .or_insert(Measurement::new(e.1));
             acc
         });
