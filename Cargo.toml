@@ -17,7 +17,9 @@ path = "src/lib.rs"
 name = "naive"
 harness = false
 
-[dev-dependencies]
-criterion = "0.3"
+[[bench]]
+name = "hash_naive"
+harness = false
 
-[dependencies]
+[dev-dependencies]
+criterion = { version = "0.3" }
