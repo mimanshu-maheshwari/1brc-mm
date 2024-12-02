@@ -16,7 +16,7 @@ impl<V: Clone> HashMap<V> {
     }
 
     fn hash(&self, key: &str) -> usize {
-        ((key.bytes().map(|v| v as usize).sum::<usize>() + 7) * 5) % self.capacity
+        (((key.bytes().map(|v| v as usize).sum::<usize>() + 7) * 5) + 31) % self.capacity
     }
 
     pub fn insert(&mut self, key: String, value: V) {
