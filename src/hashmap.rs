@@ -12,11 +12,19 @@ impl<V: Clone> HashMap<V> {
     }
 
     fn hash_(&self, key: &[u8]) -> usize {
-        (((key.iter().map(|&v| v as usize).sum::<usize>() + 7) * 5) + 31) % self.capacity
+        (((key
+            .iter()
+            .enumerate()
+            .map(|(i, &v)| (i + 1) * v as usize)
+            .sum::<usize>()
+            + 7)
+            * 5)
+            + 31)
+            % self.capacity
     }
 
     fn hash(&self, key: &str) -> usize {
-        (((key.bytes().map(|v| v as usize).sum::<usize>() + 7) * 5) + 31) % self.capacity
+        self.hash_(key.as_bytes())
     }
 
     pub fn insert(&mut self, key: String, value: V) {

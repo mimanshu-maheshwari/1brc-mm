@@ -392,7 +392,7 @@ Vilnius;-42.8/6.0/56.0
 Virginia Beach;-39.1/15.8/63.5
 Vladivostok;-41.7/4.9/57.7
 Warsaw;-42.4/8.5/57.5
-Washington D.C.;-38.2/14.6/71.5
+Washington, D.C.;-38.2/14.6/71.5
 Wau;-21.8/27.8/75.1
 Wellington;-38.1/12.9/65.9
 Whitehorse;-53.8/-0.1/47.5
