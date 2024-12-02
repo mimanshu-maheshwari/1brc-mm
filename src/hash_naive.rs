@@ -1,5 +1,8 @@
-use super::{hashmap::HashMap, measurement::Measurement};
+use rustc_hash::FxHashMap;
 
+use super::measurement::Measurement;
+
+type HashMap<K, V> = FxHashMap<K, V>;
 use std::{
     fs::File,
     io::{BufRead, BufReader},
@@ -24,25 +27,18 @@ pub fn solve(file_name: &str) {
                 None
             }
         })
-        .fold(
-            HashMap::<Measurement>::with_capacity(1_000_000),
-            |mut acc, e| {
-                if acc.contains_key(&e.0) {
-                    if let Some(val) = acc.get_mut(&e.0) {
-                        val.update(e.1);
-                    }
-                } else {
-                    acc.insert(e.0, Measurement::new(e.1));
-                }
-                acc
-            },
-        );
+        .fold(HashMap::<String, Measurement>::default(), |mut acc, e| {
+            acc.entry(e.0)
+                .and_modify(|v| v.update(e.1))
+                .or_insert(Measurement::new(e.1));
+            acc
+        });
     display(val);
 }
 
 #[inline(always)]
-fn display(result: HashMap<Measurement>) {
-    for (city, measurement) in result.iter() {
+fn display(result: HashMap<String, Measurement>) {
+    for (city, measurement) in result {
         println!("{city};{measurement}");
     }
 }

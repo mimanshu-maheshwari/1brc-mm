@@ -121,8 +121,7 @@ Erbil;-30.4/19.5/69.5
 Erzurum;-43.0/5.1/53.9
 Fairbanks;-51.1/-2.3/49.2
 Fianarantsoa;-34.4/17.9/68.0
-Flores
- Petén;-22.3/26.4/75.0
+Flores,  Petén;-22.3/26.4/75.0
 Frankfurt;-36.7/10.6/59.4
 Fresno;-29.5/17.9/80.7
 Fukuoka;-33.3/17.0/75.6
