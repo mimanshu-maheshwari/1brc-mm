@@ -71,7 +71,9 @@ fn parse_temp(bytes: &[u8]) -> f32 {
 
 #[inline(always)]
 fn display(result: HashMap<Measurement>) {
-    for (city, measurement) in result.iter() {
+    let mut result: Vec<_> = result.iter().collect();
+    result.sort_by_key(|k| k.0);
+    for (city, measurement) in result {
         println!("{city};{measurement}");
     }
 }
