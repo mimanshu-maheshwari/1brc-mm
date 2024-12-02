@@ -25,6 +25,7 @@ pub fn solve(file_name: &str) {
         // count += 1;
         if let Some((city, value)) = split_at(line) {
             let value = parse_temp(value);
+            // println!("{}: {}", String::from_utf8(city.to_owned()).unwrap(), value);
             if let Some(val) = records.get_mut_(city) {
                 val.update(value);
             } else {
@@ -57,12 +58,14 @@ fn parse_temp(bytes: &[u8]) -> f32 {
     let mut neg = false;
     let mut value = 0.0;
     let mut multiplier = 1.0;
+    // println!("{:?}", bytes);
     for &byte in bytes {
         match byte {
             b'-' => neg = true,
             b'.' => multiplier = 0.1,
             s if (b'0'..=b'9').contains(&s) => {
-                value = value * if multiplier > 1.0 { 1.0 } else { 10.0 } + s as f32 * multiplier
+                value = (value * if multiplier == 1.0 { 1.0 } else { 10.0 })
+                    + ((s - b'0') as f32 * multiplier)
             }
             s => panic!("Unexpected value ({s}) while parsing temp"),
         }
