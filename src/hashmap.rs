@@ -11,6 +11,10 @@ impl<V: Clone> HashMap<V> {
         }
     }
 
+    fn hash_(&self, key: &[u8]) -> usize {
+        ((key.iter().map(|&v| v as usize).sum::<usize>() + 7) * 5) % self.capacity
+    }
+
     fn hash(&self, key: &str) -> usize {
         ((key.bytes().map(|v| v as usize).sum::<usize>() + 7) * 5) % self.capacity
     }
@@ -36,7 +40,22 @@ impl<V: Clone> HashMap<V> {
     pub fn get(&self, key: &str) -> Option<&V> {
         let hash = self.hash(key);
         if let Some(val) = self.data.get(hash) {
+            if val.is_none() {
+                return None;
+            }
             Some(&val.as_ref().unwrap().1)
+        } else {
+            None
+        }
+    }
+
+    pub fn get_mut_(&mut self, key: &[u8]) -> Option<&mut V> {
+        let hash = self.hash_(key);
+        if let Some(val) = self.data.get_mut(hash) {
+            if val.is_none() {
+                return None;
+            }
+            Some(&mut val.as_mut().unwrap().1)
         } else {
             None
         }
